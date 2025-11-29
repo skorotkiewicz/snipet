@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GitFork, Heart, History, Pencil, Trash2 } from "lucide-react";
+import { GitFork, Globe, Heart, History, Lock, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -232,7 +232,15 @@ export function SnippetDetailPage() {
                     queryClient.invalidateQueries({ queryKey: ["snippet", id] });
                   }}
                 >
-                  {snippet.visibility === "public" ? "Make Private" : "Make Public"}
+                  {snippet.visibility === "public" ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" /> Make Private
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-4 h-4 mr-2" /> Make Public
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="destructive"

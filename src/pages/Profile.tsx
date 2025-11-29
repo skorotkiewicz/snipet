@@ -59,7 +59,7 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between border rounded-lg bg-card text-card-foreground shadow-sm p-6">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage

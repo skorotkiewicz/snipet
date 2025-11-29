@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { GitFork, Heart, MessageSquare, MoreHorizontal, Share2 } from "lucide-react";
+import { GitFork, Heart, Lock, MessageSquare, MoreHorizontal, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -118,12 +118,20 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
             </Avatar>
           </Link>
           <div className="flex flex-col">
-            <Link
-              to={`/profile/${snippet.expand?.author?.id}`}
-              className="text-sm font-semibold hover:underline"
-            >
-              {snippet.expand?.author?.name || "Unknown"}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/profile/${snippet.expand?.author?.id}`}
+                className="text-sm font-semibold hover:underline"
+              >
+                {snippet.expand?.author?.name || "Unknown"}
+              </Link>
+              {snippet.visibility === "private" && (
+                <div className="flex items-center gap-1 text-xs bg-muted px-1.5 py-0.5 rounded-full text-muted-foreground">
+                  <Lock className="w-3 h-3" />
+                  <span>Private</span>
+                </div>
+              )}
+            </div>
             <Link
               to={`/snippet/${snippet.id}`}
               className="text-xs text-muted-foreground hover:underline"
@@ -200,9 +208,11 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
               <GitFork className="h-6 w-6" />
             </Button> */}
           </div>
-          <Button variant="ghost" size="icon" onClick={handleShare}>
-            <Share2 className="h-6 w-6" />
-          </Button>
+          <Link to={`/snippet/${snippet.id}`}>
+            <Button variant="ghost" size="icon" onClick={handleShare}>
+              <Share2 className="h-6 w-6" />
+            </Button>
+          </Link>
         </div>
 
         <div className="space-y-1">
