@@ -116,7 +116,7 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
   // Check if comment is editable (created less than 30 minutes ago)
   const isEditable = () => {
     const created = new Date(comment.created).getTime();
-    const now = new Date().getTime();
+    const now = Date.now();
     return now - created < 30 * 60 * 1000;
   };
 
@@ -166,7 +166,7 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
           <AvatarImage
             src={
               comment.expand?.author?.avatar
-                ? `http://127.0.0.1:8090/api/files/users/${comment.expand.author.id}/${comment.expand.author.avatar}`
+                ? `${import.meta.env.VITE_POCKETBASE_URL || "http://127.0.0.1:8090"}/api/files/users/${comment.expand.author.id}/${comment.expand.author.avatar}`
                 : undefined
             }
           />

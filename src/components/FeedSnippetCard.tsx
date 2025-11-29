@@ -92,7 +92,7 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
               <AvatarImage
                 src={
                   snippet.expand?.author?.avatar
-                    ? `http://127.0.0.1:8090/api/files/users/${snippet.expand.author.id}/${snippet.expand.author.avatar}`
+                    ? `${import.meta.env.VITE_POCKETBASE_URL || "http://127.0.0.1:8090"}/api/files/users/${snippet.expand.author.id}/${snippet.expand.author.avatar}`
                     : undefined
                 }
               />

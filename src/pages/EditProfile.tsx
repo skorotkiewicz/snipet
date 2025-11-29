@@ -161,7 +161,7 @@ export function EditProfilePage() {
                     />
                   ) : userData?.avatar ? (
                     <img
-                      src={`http://127.0.0.1:8090/api/files/users/${userData.id}/${userData.avatar}`}
+                      src={`${import.meta.env.VITE_POCKETBASE_URL || "http://127.0.0.1:8090"}/api/files/users/${userData.id}/${userData.avatar}`}
                       alt="Current avatar"
                       className="w-full h-full object-cover"
                     />
