@@ -190,9 +190,12 @@ export function SnippetDetailPage() {
               <span>•</span>
               <span>{new Date(snippet.created).toLocaleDateString()}</span>
               {snippet.expand?.forked_from && (
-                <span className="flex items-center gap-1 text-xs bg-muted px-2 py-0.5 rounded">
+                <Link
+                  to={`/snippet/${snippet.forked_from}`}
+                  className="flex items-center gap-1 text-xs bg-muted px-2 py-0.5 rounded hover:bg-muted/80 transition-colors"
+                >
                   <GitFork className="w-3 h-3" /> Forked from {snippet.expand.forked_from.title}
-                </span>
+                </Link>
               )}
             </div>
           </div>
@@ -351,7 +354,7 @@ export function SnippetDetailPage() {
                 placeholder="Leave a comment..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[100px] bg-card"
               />
               <Button
                 onClick={() => createCommentMutation.mutate(comment)}

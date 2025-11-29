@@ -7,7 +7,7 @@ interface DiffViewProps {
   language: string;
 }
 
-export function DiffView({ oldCode, newCode, language }: DiffViewProps) {
+export function DiffView({ oldCode, newCode }: DiffViewProps) {
   const diff = useMemo(() => diffLines(oldCode, newCode), [oldCode, newCode]);
 
   return (

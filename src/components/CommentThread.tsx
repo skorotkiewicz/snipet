@@ -193,7 +193,7 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="min-h-[80px] text-sm"
+                className="min-h-[80px] text-sm bg-card"
               />
               <div className="flex gap-2">
                 <Button
@@ -298,7 +298,7 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
                 placeholder="Write a reply..."
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
-                className="min-h-[80px] text-sm"
+                className="min-h-[80px] text-sm bg-card"
               />
               <div className="flex gap-2">
                 <Button

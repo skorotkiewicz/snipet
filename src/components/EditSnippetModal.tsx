@@ -89,7 +89,7 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card">
         <DialogHeader>
           <DialogTitle>Edit Snippet</DialogTitle>
           <DialogDescription>
@@ -141,7 +141,7 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
             <Textarea
               id="description"
               placeholder="Describe your snippet..."
-              className="min-h-[100px]"
+              className="min-h-[100px] bg-card"
               {...form.register("description")}
             />
           </div>
@@ -151,7 +151,7 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
             <Textarea
               id="code"
               placeholder="Paste your code here..."
-              className="min-h-[300px] font-mono"
+              className="min-h-[300px] font-mono bg-card"
               {...form.register("code")}
             />
             {form.formState.errors.code && (

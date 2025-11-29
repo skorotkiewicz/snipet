@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { GitFork, Heart, Lock, MessageSquare, MoreHorizontal, Share2 } from "lucide-react";
+import { Heart, Lock, MessageSquare, MoreHorizontal, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -77,24 +77,6 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
     },
   });
 
-  //   const forkMutation = useMutation({
-  //     mutationFn: async () => {
-  //       return await pb.collection("snippets").create({
-  //         title: `Fork of ${snippet.title}`,
-  //         code: snippet.code,
-  //         language: snippet.language,
-  //         description: snippet.description,
-  //         visibility: "public",
-  //         author: user?.id,
-  //         forked_from: snippet.id,
-  //       });
-  //     },
-  //     onSuccess: (newSnippet) => {
-  //       // Ideally navigate or show toast
-  //       alert(`Forked successfully! ID: ${newSnippet.id}`);
-  //     },
-  //   });
-
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/snippet/${snippet.id}`);
     alert("Link copied to clipboard!");
@@ -148,9 +130,6 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleShare}>Copy Link</DropdownMenuItem>
-            {/* {user && (
-              <DropdownMenuItem onClick={() => forkMutation.mutate()}>Fork</DropdownMenuItem>
-            )} */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -204,9 +183,6 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
                 <MessageSquare className="h-6 w-6" />
               </Button>
             </Link>
-            {/* <Button variant="ghost" size="icon" onClick={() => user && forkMutation.mutate()}>
-              <GitFork className="h-6 w-6" />
-            </Button> */}
           </div>
           <Link to={`/snippet/${snippet.id}`}>
             <Button variant="ghost" size="icon" onClick={handleShare}>
