@@ -29,6 +29,11 @@ Follow these steps to create the database schema manually in PocketBase Admin UI
    - Max select: 1
    - Max size: 5MB (5242880 bytes)
 
+3. **about**
+   - Type: Text
+   - Required: ✗
+   - Max length: 500 characters (optional)
+
 ---
 
 ## 2. Snippets Collection
@@ -115,6 +120,13 @@ Follow these steps to create the database schema manually in PocketBase Admin UI
    - Max select: 1
    - Cascade delete: ✓ (when snippet is deleted, delete its comments)
 
+4. **parent**
+   - Type: Relation
+   - Required: ✗ (top-level comments have no parent)
+   - Collection: `comments` (self-reference)
+   - Max select: 1
+   - Cascade delete: ✓ (when parent comment is deleted, delete all replies)
+
 ---
 
 ## 4. Upvotes Collection
@@ -160,7 +172,7 @@ Follow these steps to create the database schema manually in PocketBase Admin UI
 After creating all collections, you should have:
 - ✓ `users` (auth collection with `name` and `avatar`)
 - ✓ `snippets` (with 7 fields including relations)
-- ✓ `comments` (with 3 fields)
+- ✓ `comments` (with 4 fields including nested replies)
 - ✓ `upvotes` (with 2 fields and unique index)
 
 Now run your app with `bun run dev` and it should work!

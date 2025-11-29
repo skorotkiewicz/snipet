@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { SnippetCard } from "@/components/SnippetCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
 
 export function ProfilePage() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const { data: userProfile } = useQuery({
     queryKey: ["user", id],
@@ -29,21 +32,31 @@ export function ProfilePage() {
 
   if (!userProfile) return <div>User not found</div>;
 
+  const isOwnProfile = user?.id === userProfile.id;
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Avatar className="h-20 w-20">
-          <AvatarImage
-            src={`http://127.0.0.1:8090/api/files/users/${userProfile.id}/${userProfile.avatar}`}
-          />
-          <AvatarFallback className="text-2xl">{userProfile.name?.[0] || "?"}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-3xl font-bold">{userProfile.name}</h1>
-          <p className="text-muted-foreground">
-            Joined {new Date(userProfile.created).toLocaleDateString()}
-          </p>
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-20 w-20">
+            <AvatarImage
+              src={`http://127.0.0.1:8090/api/files/users/${userProfile.id}/${userProfile.avatar}`}
+            />
+            <AvatarFallback className="text-2xl">{userProfile.name?.[0] || "?"}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold">{userProfile.name}</h1>
+            <p className="text-muted-foreground">
+              Joined {new Date(userProfile.created).toLocaleDateString()}
+            </p>
+            {userProfile.about && <p className="text-sm max-w-2xl mt-2">{userProfile.about}</p>}
+          </div>
         </div>
+        {isOwnProfile && (
+          <Button asChild variant="outline">
+            <Link to="/profile/edit">Edit Profile</Link>
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">

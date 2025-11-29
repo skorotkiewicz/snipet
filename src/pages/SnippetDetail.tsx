@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
 import { GitFork, Heart, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CommentThread } from "@/components/CommentThread";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,8 +31,8 @@ export function SnippetDetailPage() {
     queryKey: ["comments", id],
     queryFn: async () => {
       return await pb.collection("comments").getList(1, 50, {
-        filter: `snippet = "${id}"`,
-        sort: "-created",
+        filter: `snippet = "${id}" && parent = null`,
+        sort: "created",
         expand: "author",
       });
     },
@@ -141,8 +140,16 @@ export function SnippetDetailPage() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">{snippet.title}</h1>
-          <div className="flex items-center gap-2 text-muted-foreground mt-2">
-            <span>by {snippet.expand?.author?.name || "Unknown"}</span>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>
+              by{" "}
+              <Link
+                to={`/profile/${snippet.expand?.author?.id}`}
+                className="font-medium hover:underline text-foreground"
+              >
+                {snippet.expand?.author?.name}
+              </Link>
+            </span>
             <span>•</span>
             <span>{new Date(snippet.created).toLocaleDateString()}</span>
             {snippet.expand?.forked_from && (
@@ -226,25 +233,13 @@ export function SnippetDetailPage() {
         )}
 
         <div className="space-y-4">
-          {comments?.items.map((comment) => (
-            <div key={comment.id} className="flex gap-4 p-4 rounded-lg border bg-card">
-              <Avatar>
-                <AvatarImage
-                  src={`http://127.0.0.1:8090/api/files/users/${comment.author}/${comment.expand?.author?.avatar}`}
-                />
-                <AvatarFallback>{comment.expand?.author?.name?.[0] || "?"}</AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{comment.expand?.author?.name || "Unknown"}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.created), { addSuffix: true })}
-                  </span>
-                </div>
-                <p className="text-sm">{comment.content}</p>
-              </div>
-            </div>
-          ))}
+          {comments?.items.length === 0 ? (
+            <p className="text-muted-foreground">No comments yet. Be the first to comment!</p>
+          ) : (
+            comments?.items.map((comment: any) => (
+              <CommentThread key={comment.id} comment={comment} snippetId={id!} />
+            ))
+          )}
         </div>
       </div>
     </div>

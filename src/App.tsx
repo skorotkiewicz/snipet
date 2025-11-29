@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { CreateSnippetPage } from "@/pages/CreateSnippet";
+import { EditProfilePage } from "@/pages/EditProfile";
 import { HomePage } from "@/pages/Home";
 import { LoginPage } from "@/pages/Login";
 import { ProfilePage } from "@/pages/Profile";
@@ -20,6 +21,7 @@ function App() {
             <Route path="/new" element={<CreateSnippetPage />} />
             <Route path="/snippet/:id" element={<SnippetDetailPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>

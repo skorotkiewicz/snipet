@@ -41,7 +41,12 @@ export function SnippetCard({ snippet }: SnippetCardProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span>by {snippet.expand?.author?.name || "Unknown"}</span>
+          <span>
+            by{" "}
+            <Link to={`/profile/${snippet.expand?.author?.id}`} className="hover:underline">
+              {snippet.expand?.author?.name || "Unknown"}
+            </Link>
+          </span>
           <span>•</span>
           <span>{formatDate(snippet.created)}</span>
         </div>
