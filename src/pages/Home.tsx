@@ -1,6 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Loader2, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 import { useSearchParams } from "react-router-dom";
-import { SnippetCard } from "@/components/SnippetCard";
+import { FeedSnippetCard } from "@/components/FeedSnippetCard";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -8,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { pb } from "@/lib/pocketbase";
 
 const LANGUAGES = [
@@ -27,44 +30,26 @@ const LANGUAGES = [
 ];
 
 export function HomePage() {
+  const { ref, inView } = useInView();
   const [searchParams, setSearchParams] = useSearchParams();
-  const searchQuery = searchParams.get("search") || "";
-  const languageFilter = searchParams.get("language") || "all";
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const [languageFilter, setLanguageFilter] = useState(searchParams.get("language") || "all");
 
-  const getFilter = () => {
-    let filter = "visibility = 'public'";
-    if (searchQuery) {
-      filter += ` && title ~ "${searchQuery}"`;
-    }
-    if (languageFilter && languageFilter !== "all") {
-      filter += ` && language = "${languageFilter}"`;
-    }
-    return filter;
-  };
-
-  const { data: newestSnippets, isLoading: isNewestLoading } = useQuery({
-    queryKey: ["snippets", "newest", searchQuery, languageFilter],
-    queryFn: async () => {
-      return await pb.collection("snippets").getList(1, 20, {
-        sort: "-created",
-        expand: "author",
-        filter: getFilter(),
-      });
-    },
-  });
-
-  const { data: popularSnippets, isLoading: isPopularLoading } = useQuery({
-    queryKey: ["snippets", "popular", searchQuery, languageFilter],
-    queryFn: async () => {
-      return await pb.collection("snippets").getList(1, 20, {
-        sort: "-created",
-        expand: "author",
-        filter: getFilter(),
-      });
-    },
-  });
+  // Debounce search update to URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        searchParams.set("search", searchQuery);
+      } else {
+        searchParams.delete("search");
+      }
+      setSearchParams(searchParams);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchParams, setSearchParams]);
 
   const handleLanguageChange = (value: string) => {
+    setLanguageFilter(value);
     if (value === "all") {
       searchParams.delete("language");
     } else {
@@ -73,22 +58,64 @@ export function HomePage() {
     setSearchParams(searchParams);
   };
 
+  const getFilter = () => {
+    let filter = "visibility = 'public'";
+    const urlSearch = searchParams.get("search");
+    const urlLang = searchParams.get("language");
+
+    if (urlSearch) {
+      filter += ` && title ~ "${urlSearch}"`;
+    }
+    if (urlLang && urlLang !== "all") {
+      filter += ` && language = "${urlLang}"`;
+    }
+    return filter;
+  };
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
+    queryKey: ["snippets", "feed", searchParams.toString()], // Refetch when params change
+    queryFn: async ({ pageParam = 1 }) => {
+      return await pb.collection("snippets").getList(pageParam, 5, {
+        sort: "-created",
+        expand: "author",
+        filter: getFilter(),
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      return lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined;
+    },
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
+
+  if (status === "error") {
+    return <div className="text-center text-red-500">Error loading feed.</div>;
+  }
+
   return (
-    <div className="space-y-8">
-      <section className="space-y-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">Discover Snippets</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Explore, share, and fork code snippets from the community.
-          </p>
-        </div>
-        <div className="w-[200px]">
+    <div className="max-w-xl mx-auto pb-20 space-y-6">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search snippets..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <Select value={languageFilter} onValueChange={handleLanguageChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by language" />
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Language" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Languages</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               {LANGUAGES.map((lang) => (
                 <SelectItem key={lang} value={lang}>
                   {lang}
@@ -97,46 +124,37 @@ export function HomePage() {
             </SelectContent>
           </Select>
         </div>
-      </section>
+      </div>
 
-      {searchQuery && <div className="text-lg">Results for "{searchQuery}"</div>}
+      {status === "pending" ? (
+        <div className="flex justify-center items-center min-h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          {data?.pages.map((page) =>
+            page.items.map((snippet) => <FeedSnippetCard key={snippet.id} snippet={snippet} />),
+          )}
 
-      <Tabs defaultValue="newest" className="w-full">
-        <TabsList>
-          <TabsTrigger value="newest">Newest</TabsTrigger>
-          <TabsTrigger value="popular">Popular</TabsTrigger>
-        </TabsList>
-        <TabsContent value="newest" className="mt-6">
-          {isNewestLoading ? (
-            <div>Loading...</div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {newestSnippets?.items.length === 0 ? (
-                <p>No snippets found.</p>
-              ) : (
-                newestSnippets?.items.map((snippet) => (
-                  <SnippetCard key={snippet.id} snippet={snippet} />
-                ))
-              )}
+          {data?.pages[0].items.length === 0 && (
+            <div className="text-center text-muted-foreground py-10">
+              No snippets found matching your criteria.
             </div>
           )}
-        </TabsContent>
-        <TabsContent value="popular" className="mt-6">
-          {isPopularLoading ? (
-            <div>Loading...</div>
-          ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {popularSnippets?.items.length === 0 ? (
-                <p>No snippets found.</p>
-              ) : (
-                popularSnippets?.items.map((snippet) => (
-                  <SnippetCard key={snippet.id} snippet={snippet} />
-                ))
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+
+          <div ref={ref} className="flex justify-center py-8">
+            {isFetchingNextPage ? (
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            ) : hasNextPage ? (
+              <div className="h-4" />
+            ) : (
+              data?.pages[0].items.length !== 0 && (
+                <p className="text-muted-foreground text-sm">You've reached the end!</p>
+              )
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

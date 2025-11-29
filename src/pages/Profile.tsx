@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { SnippetCard } from "@/components/SnippetCard";
+import { FeedSnippetCard } from "@/components/FeedSnippetCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,12 +58,16 @@ export function ProfilePage() {
   const isOwnProfile = user?.id === userProfile.id;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-xl mx-auto">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage
-              src={`http://127.0.0.1:8090/api/files/users/${userProfile.id}/${userProfile.avatar}`}
+              src={
+                userProfile.avatar
+                  ? `http://127.0.0.1:8090/api/files/users/${userProfile.id}/${userProfile.avatar}`
+                  : undefined
+              }
             />
             <AvatarFallback className="text-2xl">{userProfile.name?.[0] || "?"}</AvatarFallback>
           </Avatar>
@@ -83,20 +87,26 @@ export function ProfilePage() {
       </div>
 
       <Tabs defaultValue="created" className="w-full">
-        <TabsList>
-          <TabsTrigger value="created">Created Snippets</TabsTrigger>
-          <TabsTrigger value="liked">Liked Snippets</TabsTrigger>
+        <TabsList className="w-full">
+          <TabsTrigger value="created" className="flex-1">
+            Created Snippets
+          </TabsTrigger>
+          <TabsTrigger value="liked" className="flex-1">
+            Liked Snippets
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="created" className="mt-6">
           {isLoading ? (
             <div>Loading...</div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-6">
               {snippets?.items.length === 0 ? (
-                <p className="text-muted-foreground">No snippets yet.</p>
+                <p className="text-muted-foreground text-center py-8">No snippets yet.</p>
               ) : (
-                snippets?.items.map((snippet) => <SnippetCard key={snippet.id} snippet={snippet} />)
+                snippets?.items.map((snippet) => (
+                  <FeedSnippetCard key={snippet.id} snippet={snippet} />
+                ))
               )}
             </div>
           )}
@@ -106,12 +116,12 @@ export function ProfilePage() {
           {isLikedLoading ? (
             <div>Loading...</div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-6">
               {likedSnippets?.items.length === 0 ? (
-                <p className="text-muted-foreground">No liked snippets yet.</p>
+                <p className="text-muted-foreground text-center py-8">No liked snippets yet.</p>
               ) : (
                 likedSnippets?.items.map((snippet: any) => (
-                  <SnippetCard key={snippet.id} snippet={snippet} />
+                  <FeedSnippetCard key={snippet.id} snippet={snippet} />
                 ))
               )}
             </div>
