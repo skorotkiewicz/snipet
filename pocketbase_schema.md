@@ -167,13 +167,52 @@ Follow these steps to create the database schema manually in PocketBase Admin UI
 
 ---
 
+## 5. Comment Upvotes Collection
+
+**Collection Settings:**
+- **Name:** `comment_upvotes`
+- **Type:** Base collection
+- **API Rules:**
+  - List: `` (empty = public)
+  - View: `` (empty = public)
+  - Create: `@request.auth.id = @request.data.userid`
+  - Update: `@request.auth.id = userid`
+  - Delete: `@request.auth.id = userid`
+
+**Fields to Add:**
+
+1. **userid**
+   - Type: Relation
+   - Required: ✓
+   - Collection: `users`
+   - Max select: 1
+   - Cascade delete: ✓
+
+2. **comment**
+   - Type: Relation
+   - Required: ✓
+   - Collection: `comments`
+   - Max select: 1
+   - Cascade delete: ✓
+
+**Indexes:**
+- Go to the collection's "Indexes" tab
+- Add this index:
+  ```sql
+  CREATE UNIQUE INDEX idx_user_comment ON comment_upvotes (userid, comment)
+  ```
+  This ensures each user can only upvote a comment once.
+
+---
+
 ## Verification
 
 After creating all collections, you should have:
-- ✓ `users` (auth collection with `name` and `avatar`)
+- ✓ `users` (auth collection with `name`, `avatar`, and `about`)
 - ✓ `snippets` (with 7 fields including relations)
 - ✓ `comments` (with 4 fields including nested replies)
 - ✓ `upvotes` (with 2 fields and unique index)
+- ✓ `comment_upvotes` (with 2 fields and unique index)
 
 Now run your app with `bun run dev` and it should work!
 

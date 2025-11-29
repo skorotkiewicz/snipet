@@ -181,17 +181,31 @@ export function SnippetDetailPage() {
             </>
           )}
           {isAuthor && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                if (confirm("Are you sure you want to delete this snippet?")) {
-                  deleteSnippetMutation.mutate();
-                }
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  await pb.collection("snippets").update(snippet.id, {
+                    visibility: snippet.visibility === "public" ? "private" : "public",
+                  });
+                  queryClient.invalidateQueries({ queryKey: ["snippet", id] });
+                }}
+              >
+                {snippet.visibility === "public" ? "Make Private" : "Make Public"}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (confirm("Are you sure you want to delete this snippet?")) {
+                    deleteSnippetMutation.mutate();
+                  }
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
           )}
         </div>
       </div>

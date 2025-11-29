@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Reply } from "lucide-react";
+import { Heart, MessageSquare, Reply } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -51,6 +51,29 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
     },
   });
 
+  // Fetch upvote count for this comment
+  const { data: upvotes } = useQuery({
+    queryKey: ["comment_upvotes", comment.id],
+    queryFn: async () => {
+      return await pb.collection("comment_upvotes").getList(1, 1, {
+        filter: `comment = "${comment.id}"`,
+      });
+    },
+  });
+
+  // Check if current user upvoted this comment
+  const { data: userUpvote } = useQuery({
+    queryKey: ["comment_upvote", comment.id, user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const res = await pb.collection("comment_upvotes").getList(1, 1, {
+        filter: `comment = "${comment.id}" && userid = "${user.id}"`,
+      });
+      return res.items[0] || null;
+    },
+    enabled: !!user,
+  });
+
   // Create reply mutation
   const createReplyMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -66,6 +89,24 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
       setReplyContent("");
       setShowReplyForm(false);
       setShowReplies(true); // Auto-expand to show new reply
+    },
+  });
+
+  // Toggle upvote mutation
+  const toggleUpvoteMutation = useMutation({
+    mutationFn: async () => {
+      if (userUpvote) {
+        return await pb.collection("comment_upvotes").delete(userUpvote.id);
+      } else {
+        return await pb.collection("comment_upvotes").create({
+          comment: comment.id,
+          userid: user?.id,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comment_upvotes", comment.id] });
+      queryClient.invalidateQueries({ queryKey: ["comment_upvote", comment.id, user?.id] });
     },
   });
 
@@ -115,6 +156,18 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
           <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
 
           <div className="flex items-center gap-2">
+            {user && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                onClick={() => toggleUpvoteMutation.mutate()}
+              >
+                <Heart className={`h-3 w-3 mr-1 ${userUpvote ? "fill-current" : ""}`} />
+                {upvotes?.totalItems || 0}
+              </Button>
+            )}
+
             {user && (
               <Button
                 variant="ghost"

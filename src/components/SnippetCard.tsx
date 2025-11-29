@@ -1,8 +1,9 @@
+import { useQuery } from "@tanstack/react-query";
 import { Heart, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { pb } from "@/lib/pocketbase";
 
-// I'll use a simple formatter for now to avoid extra deps if possible, or just install date-fns
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString();
 };
@@ -12,6 +13,28 @@ interface SnippetCardProps {
 }
 
 export function SnippetCard({ snippet }: SnippetCardProps) {
+  // Fetch upvote count for this snippet
+  const { data: upvotes } = useQuery({
+    queryKey: ["snippet_upvotes", snippet.id],
+    queryFn: async () => {
+      const res = await pb.collection("upvotes").getList(1, 1, {
+        filter: `snippet = "${snippet.id}"`,
+      });
+      return res.totalItems;
+    },
+  });
+
+  // Fetch comment count for this snippet
+  const { data: commentCount } = useQuery({
+    queryKey: ["snippet_comments_count", snippet.id],
+    queryFn: async () => {
+      const res = await pb.collection("comments").getList(1, 1, {
+        filter: `snippet = "${snippet.id}"`,
+      });
+      return res.totalItems;
+    },
+  });
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
@@ -34,10 +57,10 @@ export function SnippetCard({ snippet }: SnippetCardProps) {
       <CardFooter className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1">
-            <Heart className="w-3 h-3" /> {snippet.upvotes?.length || 0}
+            <Heart className="w-3 h-3" /> {upvotes || 0}
           </span>
           <span className="flex items-center gap-1">
-            <MessageSquare className="w-3 h-3" /> {snippet.comments?.length || 0}
+            <MessageSquare className="w-3 h-3" /> {commentCount || 0}
           </span>
         </div>
         <div className="flex items-center gap-2">
