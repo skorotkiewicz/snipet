@@ -13,18 +13,23 @@ export function Navbar() {
           <Link to="/" className="mr-6 flex items-center space-x-2">
             <span className="hidden font-bold sm:inline-block text-lg text-primary">Snipet</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          {/* <nav className="flex items-center space-x-6 text-sm font-medium">
             <Button asChild size="sm" className="gap-2 shadow-none">
               <Link to="/new">
                 <Plus className="h-4 w-4" /> Create
               </Link>
             </Button>
-          </nav>
+          </nav> */}
         </div>
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <nav className="flex items-center gap-2">
             {user ? (
               <>
+                <Button asChild size="sm" className="gap-2 shadow-none">
+                  <Link to="/new">
+                    <Plus className="h-4 w-4" /> Create
+                  </Link>
+                </Button>
                 <Button variant="ghost" asChild size="sm">
                   <Link to={`/profile/${user.id}`}>Profile</Link>
                 </Button>
