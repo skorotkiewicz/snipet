@@ -145,6 +145,7 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
           <SyntaxHighlighter
             language={snippet.language}
             style={vscDarkPlus}
+            // style={oneLight}
             customStyle={{ margin: 0, borderRadius: 0, fontSize: "0.875rem" }}
             showLineNumbers
           >

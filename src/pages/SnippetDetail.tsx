@@ -272,6 +272,7 @@ export function SnippetDetailPage() {
               <SyntaxHighlighter
                 language={snippet.language}
                 style={vscDarkPlus}
+                // style={oneLight}
                 customStyle={{ margin: 0, borderRadius: 0 }}
                 showLineNumbers
               >
