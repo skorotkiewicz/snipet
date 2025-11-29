@@ -105,7 +105,7 @@ export function HomePage() {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search snippets..."
-              className="pl-8"
+              className="pl-8 bg-card"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
