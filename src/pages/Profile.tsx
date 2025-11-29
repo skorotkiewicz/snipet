@@ -58,7 +58,7 @@ export function ProfilePage() {
   const isOwnProfile = user?.id === userProfile.id;
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto">
+    <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">

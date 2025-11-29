@@ -98,7 +98,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto pb-20 space-y-6">
+    <div className="pb-20 space-y-6">
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
         <div className="flex gap-2">
           <div className="relative flex-1">

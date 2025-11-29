@@ -172,7 +172,7 @@ export function SnippetDetailPage() {
   const isAuthor = user?.id === snippet.author;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">{snippet.title}</h1>

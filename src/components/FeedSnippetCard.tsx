@@ -77,23 +77,23 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
     },
   });
 
-  const forkMutation = useMutation({
-    mutationFn: async () => {
-      return await pb.collection("snippets").create({
-        title: `Fork of ${snippet.title}`,
-        code: snippet.code,
-        language: snippet.language,
-        description: snippet.description,
-        visibility: "public",
-        author: user?.id,
-        forked_from: snippet.id,
-      });
-    },
-    onSuccess: (newSnippet) => {
-      // Ideally navigate or show toast
-      alert(`Forked successfully! ID: ${newSnippet.id}`);
-    },
-  });
+  //   const forkMutation = useMutation({
+  //     mutationFn: async () => {
+  //       return await pb.collection("snippets").create({
+  //         title: `Fork of ${snippet.title}`,
+  //         code: snippet.code,
+  //         language: snippet.language,
+  //         description: snippet.description,
+  //         visibility: "public",
+  //         author: user?.id,
+  //         forked_from: snippet.id,
+  //       });
+  //     },
+  //     onSuccess: (newSnippet) => {
+  //       // Ideally navigate or show toast
+  //       alert(`Forked successfully! ID: ${newSnippet.id}`);
+  //     },
+  //   });
 
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/snippet/${snippet.id}`);
@@ -124,9 +124,12 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
             >
               {snippet.expand?.author?.name || "Unknown"}
             </Link>
-            <span className="text-xs text-muted-foreground">
+            <Link
+              to={`/snippet/${snippet.id}`}
+              className="text-xs text-muted-foreground hover:underline"
+            >
               {formatDistanceToNow(new Date(snippet.created), { addSuffix: true })}
-            </span>
+            </Link>
           </div>
         </div>
         <DropdownMenu>
@@ -137,9 +140,9 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleShare}>Copy Link</DropdownMenuItem>
-            {user && (
+            {/* {user && (
               <DropdownMenuItem onClick={() => forkMutation.mutate()}>Fork</DropdownMenuItem>
-            )}
+            )} */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -193,9 +196,9 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
                 <MessageSquare className="h-6 w-6" />
               </Button>
             </Link>
-            <Button variant="ghost" size="icon" onClick={() => user && forkMutation.mutate()}>
+            {/* <Button variant="ghost" size="icon" onClick={() => user && forkMutation.mutate()}>
               <GitFork className="h-6 w-6" />
-            </Button>
+            </Button> */}
           </div>
           <Button variant="ghost" size="icon" onClick={handleShare}>
             <Share2 className="h-6 w-6" />
@@ -211,7 +214,7 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
               <p className="text-muted-foreground mt-1 line-clamp-2">{snippet.description}</p>
             )}
           </div>
-          {commentCount > 0 && (
+          {(commentCount || 0) > 0 && (
             <Link
               to={`/snippet/${snippet.id}`}
               className="text-sm text-muted-foreground hover:text-foreground block mt-1"
