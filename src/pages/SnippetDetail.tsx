@@ -21,6 +21,7 @@ export function SnippetDetailPage() {
   const [comment, setComment] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<any>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   const { data: snippet, isLoading } = useQuery({
     queryKey: ["snippet", id],
@@ -268,7 +269,21 @@ export function SnippetDetailPage() {
           </TabsList>
 
           <TabsContent value="code" className="mt-4 space-y-6">
-            <div className="rounded-md overflow-hidden border">
+            <div className="rounded-md overflow-hidden border relative group">
+              <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 text-xs bg-background/80 hover:bg-background shadow-sm transition-all w-16"
+                  onClick={() => {
+                    navigator.clipboard.writeText(snippet.code);
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 1000);
+                  }}
+                >
+                  {isCopied ? "Copied!" : "Copy"}
+                </Button>
+              </div>
               <SyntaxHighlighter
                 language={snippet.language}
                 style={vscDarkPlus}

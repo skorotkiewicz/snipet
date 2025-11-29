@@ -77,9 +77,17 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
     },
   });
 
+  const [isCopied, setIsCopied] = useState(false);
+
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/snippet/${snippet.id}`);
     alert("Link copied to clipboard!");
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(snippet.code);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 1000);
   };
 
   return (
@@ -130,12 +138,26 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleShare}>Copy Link</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyCode}>Copy Code</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
       {/* Code Content */}
       <div className="relative group">
+        <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-8 text-xs bg-background/80 hover:bg-background shadow-sm transition-all w-16"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopyCode();
+            }}
+          >
+            {isCopied ? "Copied!" : "Copy"}
+          </Button>
+        </div>
         <div
           className={`bg-[#1e1e1e] transition-all duration-300 ${
             isExpanded ? "" : "max-h-[400px] overflow-hidden"
@@ -195,7 +217,7 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
         <div className="space-y-1">
           <div className="text-sm font-semibold">{upvotes || 0} likes</div>
           <div className="text-sm">
-            <span className="font-semibold mr-2">{snippet.expand?.author?.name}</span>
+            {/* <span className="font-semibold mr-2">{snippet.expand?.author?.name}</span> */}
             <span className="font-medium">{snippet.title}</span>
             {snippet.description && (
               <p className="text-muted-foreground mt-1 line-clamp-2">{snippet.description}</p>
