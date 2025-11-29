@@ -205,6 +205,48 @@ Follow these steps to create the database schema manually in PocketBase Admin UI
 
 ---
 
+## 6. Snippet Versions Collection
+
+**Collection Settings:**
+- **Name:** `snippet_versions`
+- **Type:** Base collection
+- **API Rules:**
+  - List: `` (empty = public)
+  - View: `` (empty = public)
+  - Create: `@request.auth.id = @request.data.author`
+  - Update: `` (empty = public, usually read-only)
+  - Delete: `@request.auth.id = author`
+
+**Fields to Add:**
+
+1. **snippet**
+   - Type: Relation
+   - Required: ✓
+   - Collection: `snippets`
+   - Max select: 1
+   - Cascade delete: ✓
+
+2. **code**
+   - Type: Text
+   - Required: ✓
+
+3. **language**
+   - Type: Text
+   - Required: ✓
+
+4. **description**
+   - Type: Text
+   - Required: ✗
+
+5. **author**
+   - Type: Relation
+   - Required: ✓
+   - Collection: `users`
+   - Max select: 1
+   - Cascade delete: ✗
+
+---
+
 ## Verification
 
 After creating all collections, you should have:
@@ -213,6 +255,7 @@ After creating all collections, you should have:
 - ✓ `comments` (with 4 fields including nested replies)
 - ✓ `upvotes` (with 2 fields and unique index)
 - ✓ `comment_upvotes` (with 2 fields and unique index)
+- ✓ `snippet_versions` (with 5 fields)
 
 Now run your app with `bun run dev` and it should work!
 

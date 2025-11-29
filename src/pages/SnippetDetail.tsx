@@ -1,11 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GitFork, Heart, Trash2 } from "lucide-react";
+import { GitFork, Heart, History, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CommentThread } from "@/components/CommentThread";
+import { DiffView } from "@/components/DiffView";
+import { EditSnippetModal } from "@/components/EditSnippetModal";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
@@ -16,6 +19,8 @@ export function SnippetDetailPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<any>(null);
 
   const { data: snippet, isLoading } = useQuery({
     queryKey: ["snippet", id],
@@ -45,7 +50,6 @@ export function SnippetDetailPage() {
       return await pb.collection("upvotes").getList(1, 1, {
         filter: `snippet = "${id}"`,
       });
-      // Note: Ideally we get count. PB getList returns totalItems.
     },
     enabled: !!id,
   });
@@ -60,6 +64,45 @@ export function SnippetDetailPage() {
       return res.items[0] || null;
     },
     enabled: !!id && !!user,
+  });
+
+  // Fetch versions history
+  const { data: versions } = useQuery({
+    queryKey: ["snippet_versions", id],
+    queryFn: async () => {
+      // Fetch versions for this snippet
+      const currentVersions = await pb.collection("snippet_versions").getList(1, 50, {
+        filter: `snippet = "${id}"`,
+        sort: "-created",
+        expand: "author",
+      });
+
+      // If forked, we could fetch parent versions too, but for now let's stick to this snippet's history
+      // as requested "see all versions from previous works" might imply recursive fetching
+      // Let's try to fetch parent versions if forked
+      let allVersions = [...currentVersions.items];
+
+      if (snippet?.forked_from) {
+        try {
+          const parentVersions = await pb.collection("snippet_versions").getList(1, 50, {
+            filter: `snippet = "${snippet.forked_from}"`,
+            sort: "-created",
+            expand: "author",
+          });
+          // Mark them as from parent
+          const parentItems = parentVersions.items.map((v) => ({ ...v, isParent: true }));
+          allVersions = [...allVersions, ...parentItems];
+        } catch (e) {
+          console.log("Could not fetch parent versions", e);
+        }
+      }
+
+      // Sort all by created desc
+      return allVersions.sort(
+        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime(),
+      );
+    },
+    enabled: !!id && !!snippet,
   });
 
   const createCommentMutation = useMutation({
@@ -103,13 +146,6 @@ export function SnippetDetailPage() {
   });
 
   const handleFork = () => {
-    // Navigate to create page with pre-filled data or handle fork logic directly
-    // Ideally we create a new snippet with 'forked_from' set to this id
-    // For now, let's just navigate to a "fork" page or use state to pass data to create page
-    // Simpler: Create the record immediately and redirect to edit it?
-    // Or: Go to /new?fork=id
-    // Let's go with /new?fork=id approach in a real app, but for now I'll just implement a direct fork action
-    // actually, let's just create it.
     forkMutation.mutate();
   };
 
@@ -182,6 +218,9 @@ export function SnippetDetailPage() {
           )}
           {isAuthor && (
             <>
+              <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(true)}>
+                <Pencil className="w-4 h-4 mr-2" /> Edit
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -210,21 +249,88 @@ export function SnippetDetailPage() {
         </div>
       </div>
 
-      <div className="rounded-md overflow-hidden border">
-        <SyntaxHighlighter
-          language={snippet.language}
-          style={vscDarkPlus}
-          customStyle={{ margin: 0, borderRadius: 0 }}
-          showLineNumbers
-        >
-          {snippet.code}
-        </SyntaxHighlighter>
-      </div>
+      <Tabs defaultValue="code" className="w-full">
+        <TabsList>
+          <TabsTrigger value="code">Code</TabsTrigger>
+          <TabsTrigger value="history">History ({versions?.length || 0})</TabsTrigger>
+        </TabsList>
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Description</h3>
-        <p className="whitespace-pre-wrap">{snippet.description || "No description."}</p>
-      </div>
+        <TabsContent value="code" className="mt-4 space-y-6">
+          <div className="rounded-md overflow-hidden border">
+            <SyntaxHighlighter
+              language={snippet.language}
+              style={vscDarkPlus}
+              customStyle={{ margin: 0, borderRadius: 0 }}
+              showLineNumbers
+            >
+              {snippet.code}
+            </SyntaxHighlighter>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Description</h3>
+            <p className="whitespace-pre-wrap">{snippet.description || "No description."}</p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-1 space-y-2 max-h-[600px] overflow-y-auto pr-2">
+              <div
+                className={`p-3 rounded-lg border cursor-pointer transition-colors ${!selectedVersion ? "bg-primary/10 border-primary" : "hover:bg-muted"}`}
+                onClick={() => setSelectedVersion(null)}
+              >
+                <div className="font-semibold">Current Version</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(snippet.updated).toLocaleString()}
+                </div>
+                <div className="text-xs mt-1">by {snippet.expand?.author?.name}</div>
+              </div>
+
+              {versions?.map((version: any) => (
+                <div
+                  key={version.id}
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedVersion?.id === version.id ? "bg-primary/10 border-primary" : "hover:bg-muted"}`}
+                  onClick={() => setSelectedVersion(version)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Version</span>
+                    {version.isParent && (
+                      <span className="text-[10px] bg-muted px-1 rounded">Parent</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(version.created).toLocaleString()}
+                  </div>
+                  <div className="text-xs mt-1">by {version.expand?.author?.name}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="md:col-span-2">
+              {selectedVersion ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">
+                      Comparing Current vs {new Date(selectedVersion.created).toLocaleDateString()}
+                    </h3>
+                  </div>
+                  <DiffView
+                    oldCode={selectedVersion.code}
+                    newCode={snippet.code}
+                    language={snippet.language}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 border rounded-lg border-dashed">
+                  <History className="w-12 h-12 mb-4 opacity-20" />
+                  <p>Select a version from the list to see changes</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <div className="space-y-6 pt-6 border-t">
         <h3 className="text-xl font-semibold">Comments ({comments?.totalItems || 0})</h3>
@@ -256,6 +362,12 @@ export function SnippetDetailPage() {
           )}
         </div>
       </div>
+
+      <EditSnippetModal
+        snippet={snippet}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+      />
     </div>
   );
 }

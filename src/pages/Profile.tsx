@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { SnippetCard } from "@/components/SnippetCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
 
@@ -26,6 +27,28 @@ export function ProfilePage() {
         sort: "-created",
         expand: "author",
       });
+    },
+    enabled: !!id,
+  });
+
+  const { data: likedSnippets, isLoading: isLikedLoading } = useQuery({
+    queryKey: ["snippets", "liked", id],
+    queryFn: async () => {
+      const res = await pb.collection("upvotes").getList(1, 50, {
+        filter: `userid = "${id}"`,
+        sort: "-created",
+        expand: "snippet,snippet.author",
+      });
+      // Map upvotes to snippet structure
+      return {
+        ...res,
+        items: res.items.map((item) => ({
+          ...item.expand?.snippet,
+          expand: {
+            author: item.expand?.snippet?.expand?.author,
+          },
+        })),
+      };
     },
     enabled: !!id,
   });
@@ -59,20 +82,42 @@ export function ProfilePage() {
         )}
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Snippets</h2>
-        {isLoading ? (
-          <div>Loading...</div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {snippets?.items.length === 0 ? (
-              <p className="text-muted-foreground">No snippets yet.</p>
-            ) : (
-              snippets?.items.map((snippet) => <SnippetCard key={snippet.id} snippet={snippet} />)
-            )}
-          </div>
-        )}
-      </div>
+      <Tabs defaultValue="created" className="w-full">
+        <TabsList>
+          <TabsTrigger value="created">Created Snippets</TabsTrigger>
+          <TabsTrigger value="liked">Liked Snippets</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="created" className="mt-6">
+          {isLoading ? (
+            <div>Loading...</div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {snippets?.items.length === 0 ? (
+                <p className="text-muted-foreground">No snippets yet.</p>
+              ) : (
+                snippets?.items.map((snippet) => <SnippetCard key={snippet.id} snippet={snippet} />)
+              )}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="liked" className="mt-6">
+          {isLikedLoading ? (
+            <div>Loading...</div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {likedSnippets?.items.length === 0 ? (
+                <p className="text-muted-foreground">No liked snippets yet.</p>
+              ) : (
+                likedSnippets?.items.map((snippet: any) => (
+                  <SnippetCard key={snippet.id} snippet={snippet} />
+                ))
+              )}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

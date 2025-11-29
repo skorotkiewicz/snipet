@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageSquare, Reply } from "lucide-react";
+import { Heart, MessageSquare, Pencil, Reply, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -110,10 +110,45 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
     },
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+
+  // Check if comment is editable (created less than 30 minutes ago)
+  const isEditable = () => {
+    const created = new Date(comment.created).getTime();
+    const now = new Date().getTime();
+    return now - created < 30 * 60 * 1000;
+  };
+
   const handleReplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyContent.trim()) return;
     createReplyMutation.mutate(replyContent);
+  };
+
+  const updateCommentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      return await pb.collection("comments").update(comment.id, { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] }); // Invalidate all comments to refresh
+      setIsEditing(false);
+    },
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: async () => {
+      return await pb.collection("comments").delete(comment.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments"] });
+    },
+  });
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editContent.trim()) return;
+    updateCommentMutation.mutate(editContent);
   };
 
   const replyCount = replies?.items.length || 0;
@@ -153,7 +188,42 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
             </span>
           </div>
 
-          <p className="text-sm whitespace-pre-wrap break-words">{comment.content}</p>
+          {isEditing ? (
+            <form onSubmit={handleEditSubmit} className="space-y-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[80px] text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={updateCommentMutation.isPending || !editContent.trim()}
+                >
+                  {updateCommentMutation.isPending ? "Saving..." : "Save"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditContent(comment.content);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {comment.content}
+              {comment.updated !== comment.created && (
+                <span className="text-xs text-muted-foreground ml-2">(edited)</span>
+              )}
+            </p>
+          )}
 
           <div className="flex items-center gap-2">
             {user && (
@@ -178,6 +248,33 @@ export function CommentThread({ comment, snippetId, depth = 0 }: CommentThreadPr
                 <Reply className="h-3 w-3 mr-1" />
                 Reply
               </Button>
+            )}
+
+            {user?.id === comment.author && isEditable() && !isEditing && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Pencil className="h-3 w-3 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-red-500 hover:text-red-600"
+                  onClick={() => {
+                    if (confirm("Delete this comment?")) {
+                      deleteCommentMutation.mutate();
+                    }
+                  }}
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Delete
+                </Button>
+              </>
             )}
 
             {replyCount > 0 && (
