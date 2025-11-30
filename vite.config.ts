@@ -2,10 +2,19 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import pluginExternal from "vite-plugin-external";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    pluginExternal({
+      externals: {
+        "react-syntax-highlighter": "https://esm.sh/react-syntax-highlighter@16.1.0",
+      },
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -17,7 +26,7 @@ export default defineConfig({
       cache: true,
       // watch: false,
       // treeshake: false,
-      // external: ["@uiw/codemirror-extensions-langs", "react-syntax-highlighter"],
+      // external: ["react-syntax-highlighter"],
 
       output: {
         manualChunks: {
@@ -36,9 +45,9 @@ export default defineConfig({
             "lucide-react",
           ],
           "codemirror-vendor": ["@uiw/react-codemirror", "@uiw/codemirror-theme-xcode"],
-          "codemirror-extensions-vendor": ["@uiw/codemirror-extensions-langs"],
+          // "codemirror-extensions-vendor": ["@uiw/codemirror-extensions-langs"],
+          // "syntax-highlighter-vendor": ["react-syntax-highlighter"],
           "pocketbase-vendor": ["pocketbase"],
-          "syntax-highlighter-vendor": ["react-syntax-highlighter"],
           "utils-vendor": [
             "date-fns",
             "zod",
