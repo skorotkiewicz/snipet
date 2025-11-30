@@ -1,7 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { loadLanguage } from "@uiw/codemirror-extensions-langs";
+import { xcodeLight } from "@uiw/codemirror-theme-xcode";
+import CodeMirror from "@uiw/react-codemirror";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { pb } from "@/lib/pocketbase";
+import { CODE_LANGUAGES, LANGUAGE_EXTENSION_MAP } from "@/lib/utils";
 
 const editSnippetSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -119,17 +123,11 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="javascript">JavaScript</SelectItem>
-                  <SelectItem value="typescript">TypeScript</SelectItem>
-                  <SelectItem value="python">Python</SelectItem>
-                  <SelectItem value="java">Java</SelectItem>
-                  <SelectItem value="cpp">C++</SelectItem>
-                  <SelectItem value="csharp">C#</SelectItem>
-                  <SelectItem value="go">Go</SelectItem>
-                  <SelectItem value="rust">Rust</SelectItem>
-                  <SelectItem value="html">HTML</SelectItem>
-                  <SelectItem value="css">CSS</SelectItem>
-                  <SelectItem value="sql">SQL</SelectItem>
+                  {CODE_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {form.formState.errors.language && (
@@ -150,11 +148,32 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
 
           <div className="space-y-2">
             <Label htmlFor="code">Code</Label>
-            <Textarea
-              id="code"
-              placeholder="Paste your code here..."
-              className="min-h-[300px] font-mono bg-card"
-              {...form.register("code")}
+            <Controller
+              name="code"
+              control={form.control}
+              render={({ field }) => (
+                <div className="border rounded-md overflow-hidden">
+                  <CodeMirror
+                    value={field.value}
+                    height="300px"
+                    extensions={[
+                      loadLanguage(
+                        (LANGUAGE_EXTENSION_MAP as any)[form.watch("language")] ||
+                          form.watch("language"),
+                      ) || [],
+                    ]}
+                    theme={xcodeLight}
+                    onChange={(value) => field.onChange(value)}
+                    className="text-base"
+                    basicSetup={{
+                      lineNumbers: true,
+                      highlightActiveLine: false,
+                      highlightActiveLineGutter: false,
+                      foldGutter: false,
+                    }}
+                  />
+                </div>
+              )}
             />
             {form.formState.errors.code && (
               <p className="text-sm text-red-500">{form.formState.errors.code.message}</p>

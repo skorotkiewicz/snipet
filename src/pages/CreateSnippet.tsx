@@ -1,4 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { loadLanguage } from "@uiw/codemirror-extensions-langs";
+import { xcodeLight } from "@uiw/codemirror-theme-xcode";
+import CodeMirror from "@uiw/react-codemirror";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -26,22 +29,9 @@ const snippetSchema = z.object({
   visibility: z.enum(["public", "private"]),
 });
 
-type SnippetFormValues = z.infer<typeof snippetSchema>;
+import { CODE_LANGUAGES, LANGUAGE_EXTENSION_MAP } from "@/lib/utils";
 
-const LANGUAGES = [
-  { value: "javascript", label: "JavaScript" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "python", label: "Python" },
-  { value: "java", label: "Java" },
-  { value: "cpp", label: "C++" },
-  { value: "csharp", label: "C#" },
-  { value: "go", label: "Go" },
-  { value: "rust", label: "Rust" },
-  { value: "html", label: "HTML" },
-  { value: "css", label: "CSS" },
-  { value: "json", label: "JSON" },
-  { value: "sql", label: "SQL" },
-];
+type SnippetFormValues = z.infer<typeof snippetSchema>;
 
 export function CreateSnippetPage() {
   const navigate = useNavigate();
@@ -53,6 +43,7 @@ export function CreateSnippetPage() {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<SnippetFormValues>({
     resolver: zodResolver(snippetSchema),
@@ -124,7 +115,7 @@ export function CreateSnippetPage() {
                         <SelectValue placeholder="Select language" />
                       </SelectTrigger>
                       <SelectContent>
-                        {LANGUAGES.map((lang) => (
+                        {CODE_LANGUAGES.map((lang) => (
                           <SelectItem key={lang.value} value={lang.value}>
                             {lang.label}
                           </SelectItem>
@@ -160,11 +151,31 @@ export function CreateSnippetPage() {
 
             <div className="space-y-2">
               <Label htmlFor="code">Code</Label>
-              <Textarea
-                id="code"
-                placeholder="// Write your code here..."
-                className="font-mono min-h-[300px]"
-                {...register("code")}
+              <Controller
+                name="code"
+                control={control}
+                render={({ field }) => (
+                  <div className="border rounded-md overflow-hidden">
+                    <CodeMirror
+                      value={field.value}
+                      height="300px"
+                      theme={xcodeLight}
+                      extensions={[
+                        loadLanguage(
+                          (LANGUAGE_EXTENSION_MAP as any)[watch("language")] || watch("language"),
+                        ) || [],
+                      ]}
+                      onChange={(value) => field.onChange(value)}
+                      className="text-base"
+                      basicSetup={{
+                        lineNumbers: true,
+                        highlightActiveLine: false,
+                        highlightActiveLineGutter: false,
+                        foldGutter: false,
+                      }}
+                    />
+                  </div>
+                )}
               />
               {errors.code && <p className="text-sm text-red-500">{errors.code.message}</p>}
             </div>

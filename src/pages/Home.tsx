@@ -13,21 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { pb } from "@/lib/pocketbase";
-
-const LANGUAGES = [
-  "javascript",
-  "typescript",
-  "python",
-  "java",
-  "cpp",
-  "csharp",
-  "go",
-  "rust",
-  "html",
-  "css",
-  "json",
-  "sql",
-];
+import { CODE_LANGUAGES } from "@/lib/utils";
 
 export function HomePage() {
   const { ref, inView } = useInView();
@@ -116,9 +102,9 @@ export function HomePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang} value={lang}>
-                  {lang}
+              {CODE_LANGUAGES.map((lang) => (
+                <SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
                 </SelectItem>
               ))}
             </SelectContent>
