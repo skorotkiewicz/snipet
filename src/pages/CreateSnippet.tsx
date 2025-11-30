@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
-import CodeMirror from "@uiw/react-codemirror";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -20,6 +19,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
+
+const CodeMirror = lazy(() => import("@uiw/react-codemirror"));
 
 const snippetSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -156,24 +157,32 @@ export function CreateSnippetPage() {
                 control={control}
                 render={({ field }) => (
                   <div className="border rounded-md overflow-hidden">
-                    <CodeMirror
-                      value={field.value}
-                      height="300px"
-                      theme={xcodeLight}
-                      extensions={[
-                        loadLanguage(
-                          (LANGUAGE_EXTENSION_MAP as any)[watch("language")] || watch("language"),
-                        ) || [],
-                      ]}
-                      onChange={(value) => field.onChange(value)}
-                      className="text-base"
-                      basicSetup={{
-                        lineNumbers: true,
-                        highlightActiveLine: false,
-                        highlightActiveLineGutter: false,
-                        foldGutter: false,
-                      }}
-                    />
+                    <Suspense
+                      fallback={
+                        <div className="h-[300px] w-full bg-muted/30 flex items-center justify-center text-muted-foreground">
+                          Loading editor...
+                        </div>
+                      }
+                    >
+                      <CodeMirror
+                        value={field.value}
+                        height="300px"
+                        theme={xcodeLight}
+                        extensions={[
+                          loadLanguage(
+                            (LANGUAGE_EXTENSION_MAP as any)[watch("language")] || watch("language"),
+                          ) || [],
+                        ]}
+                        onChange={(value) => field.onChange(value)}
+                        className="text-base"
+                        basicSetup={{
+                          lineNumbers: true,
+                          highlightActiveLine: false,
+                          highlightActiveLineGutter: false,
+                          foldGutter: false,
+                        }}
+                      />
+                    </Suspense>
                   </div>
                 )}
               />

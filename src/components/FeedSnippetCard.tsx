@@ -245,3 +245,31 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
     </div>
   );
 }
+
+export function SnippetCardSkeleton() {
+  return (
+    <div className="border rounded-lg bg-card text-card-foreground shadow-sm overflow-hidden mb-6">
+      <div className="p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+            <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+      </div>
+      <div className="h-[200px] bg-muted/50 animate-pulse" />
+      <div className="p-4 space-y-4">
+        <div className="flex gap-4">
+          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="space-y-2">
+          <div className="h-6 w-3/4 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-1/2 bg-muted animate-pulse rounded" />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -2,8 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
-import CodeMirror from "@uiw/react-codemirror";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { pb } from "@/lib/pocketbase";
 import { CODE_LANGUAGES, LANGUAGE_EXTENSION_MAP } from "@/lib/utils";
+
+const CodeMirror = lazy(() => import("@uiw/react-codemirror"));
 
 const editSnippetSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -153,28 +154,36 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
               control={form.control}
               render={({ field }) => (
                 <div className="border rounded-md overflow-hidden">
-                  <CodeMirror
-                    value={field.value}
-                    height="300px"
-                    extensions={[
-                      loadLanguage(
-                        (LANGUAGE_EXTENSION_MAP as any)[form.watch("language")] ||
-                          form.watch("language"),
-                      ) || [],
-                    ]}
-                    theme={xcodeLight}
-                    onChange={(value) => field.onChange(value)}
-                    className="text-base"
-                    basicSetup={{
-                      lineNumbers: true,
-                      highlightActiveLine: false,
-                      highlightActiveLineGutter: false,
-                      foldGutter: false,
-                    }}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="h-[300px] w-full bg-muted/30 flex items-center justify-center text-muted-foreground">
+                        Loading editor...
+                      </div>
+                    }
+                  >
+                    <CodeMirror
+                      value={field.value}
+                      height="300px"
+                      extensions={[
+                        loadLanguage(
+                          (LANGUAGE_EXTENSION_MAP as any)[form.watch("language")] ||
+                            form.watch("language"),
+                        ) || [],
+                      ]}
+                      theme={xcodeLight}
+                      onChange={(value) => field.onChange(value)}
+                      className="text-base"
+                      basicSetup={{
+                        lineNumbers: true,
+                        highlightActiveLine: false,
+                        highlightActiveLineGutter: false,
+                        foldGutter: false,
+                      }}
+                    />
+                  </Suspense>
                 </div>
               )}
-            />
+            />{" "}
             {form.formState.errors.code && (
               <p className="text-sm text-red-500">{form.formState.errors.code.message}</p>
             )}

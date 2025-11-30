@@ -1,11 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
+import { lazy, Suspense } from "react";
 import { Link, useParams } from "react-router-dom";
-import { FeedSnippetCard } from "@/components/FeedSnippetCard";
+import { SnippetCardSkeleton } from "@/components/FeedSnippetCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
+
+const FeedSnippetCard = lazy(() =>
+  import("@/components/FeedSnippetCard").then((module) => ({ default: module.FeedSnippetCard })),
+);
 
 export function ProfilePage() {
   const { id } = useParams();
@@ -105,7 +110,9 @@ export function ProfilePage() {
                 <p className="text-muted-foreground text-center py-8">No snippets yet.</p>
               ) : (
                 snippets?.items.map((snippet) => (
-                  <FeedSnippetCard key={snippet.id} snippet={snippet} />
+                  <Suspense key={snippet.id} fallback={<SnippetCardSkeleton />}>
+                    <FeedSnippetCard key={snippet.id} snippet={snippet} />
+                  </Suspense>
                 ))
               )}
             </div>
@@ -121,7 +128,9 @@ export function ProfilePage() {
                 <p className="text-muted-foreground text-center py-8">No liked snippets yet.</p>
               ) : (
                 likedSnippets?.items.map((snippet: any) => (
-                  <FeedSnippetCard key={snippet.id} snippet={snippet} />
+                  <Suspense key={snippet.id} fallback={<SnippetCardSkeleton />}>
+                    <FeedSnippetCard key={snippet.id} snippet={snippet} />
+                  </Suspense>
                 ))
               )}
             </div>

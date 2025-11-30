@@ -1,9 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useSearchParams } from "react-router-dom";
-import { FeedSnippetCard } from "@/components/FeedSnippetCard";
+import { SnippetCardSkeleton } from "@/components/FeedSnippetCard";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/select";
 import { pb } from "@/lib/pocketbase";
 import { CODE_LANGUAGES } from "@/lib/utils";
+
+const FeedSnippetCard = lazy(() =>
+  import("@/components/FeedSnippetCard").then((module) => ({ default: module.FeedSnippetCard })),
+);
 
 export function HomePage() {
   const { ref, inView } = useInView();
@@ -119,7 +123,11 @@ export function HomePage() {
       ) : (
         <>
           {data?.pages.map((page) =>
-            page.items.map((snippet) => <FeedSnippetCard key={snippet.id} snippet={snippet} />),
+            page.items.map((snippet) => (
+              <Suspense key={snippet.id} fallback={<SnippetCardSkeleton />}>
+                <FeedSnippetCard key={snippet.id} snippet={snippet} />
+              </Suspense>
+            )),
           )}
 
           {data?.pages[0].items.length === 0 && (
