@@ -31,7 +31,7 @@ export function Navbar() {
                   </Link>
                 </Button>
                 <Button variant="ghost" asChild size="sm">
-                  <Link to={`/profile/${user.id}`}>Profile</Link>
+                  <Link to={`/profile/${user.id}`}>{user.name || "Profile"}</Link>
                 </Button>
                 <Button variant="outline" onClick={signOut} size="sm">
                   Sign Out
