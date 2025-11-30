@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { lazy, Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -18,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
+// import { loadLanguage } from "@uiw/codemirror-extensions-langs";
+import { loadLanguage } from "@/lib/custom-langs";
 import { pb } from "@/lib/pocketbase";
 
 const CodeMirror = lazy(() => import("@uiw/react-codemirror"));

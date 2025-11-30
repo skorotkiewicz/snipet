@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { loadLanguage } from "@uiw/codemirror-extensions-langs";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { lazy, Suspense, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -23,6 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+// import { loadLanguage } from "@uiw/codemirror-extensions-langs";
+import { loadLanguage } from "@/lib/custom-langs";
 import { pb } from "@/lib/pocketbase";
 import { CODE_LANGUAGES, LANGUAGE_EXTENSION_MAP } from "@/lib/utils";
 
