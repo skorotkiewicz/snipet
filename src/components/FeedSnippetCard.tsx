@@ -121,6 +121,9 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
                   <span>Private</span>
                 </div>
               )}
+              <div className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium uppercase">
+                {snippet.language}
+              </div>
             </div>
             <Link
               to={`/snippet/${snippet.id}`}

@@ -198,6 +198,9 @@ export function SnippetDetailPage() {
                   <GitFork className="w-3 h-3" /> Forked from {snippet.expand.forked_from.title}
                 </Link>
               )}
+              <span className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium uppercase">
+                {snippet.language}
+              </span>
             </div>
           </div>
           <div className="flex gap-2">
