@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { pb } from "@/lib/pocketbase";
@@ -15,6 +16,7 @@ import { pb } from "@/lib/pocketbase";
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   about: z.string().max(500, "About me must be 500 characters or less").optional(),
+  emailVisibility: z.boolean(),
 });
 
 const passwordSchema = z
@@ -54,6 +56,7 @@ export function EditProfilePage() {
     values: {
       name: userData?.name || "",
       about: userData?.about || "",
+      emailVisibility: !!userData?.emailVisibility,
     },
   });
 
@@ -65,6 +68,7 @@ export function EditProfilePage() {
     mutationFn: async (data: ProfileFormValues & { avatar?: File }) => {
       const formData = new FormData();
       formData.append("name", data.name);
+      formData.append("emailVisibility", String(data.emailVisibility));
       if (data.about) formData.append("about", data.about);
       if (data.avatar) formData.append("avatar", data.avatar);
 
@@ -196,11 +200,23 @@ export function EditProfilePage() {
               )}
             </div>
 
+            {/* Email Visibility */}
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="emailVisibility"
+                checked={profileForm.watch("emailVisibility")}
+                onCheckedChange={(checked) => profileForm.setValue("emailVisibility", checked)}
+              />
+              <Label htmlFor="emailVisibility">Show email on public profile</Label>
+            </div>
+
             {profileError && <p className="text-sm text-red-500">{profileError}</p>}
 
-            <Button type="submit" disabled={updateProfileMutation.isPending}>
-              {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={updateProfileMutation.isPending}>
+                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -249,9 +265,11 @@ export function EditProfilePage() {
 
             {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
 
-            <Button type="submit" disabled={changePasswordMutation.isPending}>
-              {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={changePasswordMutation.isPending}>
+                {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

@@ -9,9 +9,9 @@ export function Navbar() {
   return (
     <nav className="w-full border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60 shadow-sm">
       <div className="w-full max-w-[800px] mx-auto px-4 flex h-16 items-center">
-        <div className="mr-4 hidden md:flex">
+        <div className="mr-4 flex">
           <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block text-lg text-primary">Snipet</span>
+            <span className="font-bold text-lg text-primary">Snipet</span>
           </Link>
           {/* <nav className="flex items-center space-x-6 text-sm font-medium">
             <Button asChild size="sm" className="gap-2 shadow-none">

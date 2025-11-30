@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Mail } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { Link, useParams } from "react-router-dom";
 import { SnippetCardSkeleton } from "@/components/FeedSnippetCard";
@@ -78,9 +79,18 @@ export function ProfilePage() {
           </Avatar>
           <div className="space-y-1">
             <h1 className="text-3xl font-bold">{userProfile.name}</h1>
-            <p className="text-muted-foreground">
-              Joined {new Date(userProfile.created).toLocaleDateString()}
-            </p>
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <span>Joined {new Date(userProfile.created).toLocaleDateString()}</span>
+              {userProfile.emailVisibility && userProfile.email && (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" />
+                    <span>{userProfile.email}</span>
+                  </div>
+                </>
+              )}
+            </div>
             {userProfile.about && <p className="text-sm max-w-2xl mt-2">{userProfile.about}</p>}
           </div>
         </div>
