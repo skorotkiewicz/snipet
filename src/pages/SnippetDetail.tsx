@@ -272,7 +272,7 @@ export function SnippetDetailPage() {
           </TabsList>
 
           <TabsContent value="code" className="mt-4 space-y-6">
-            <div className="rounded-md overflow-hidden border relative group">
+            <div className="-mx-6 border-y relative group">
               <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="secondary"
