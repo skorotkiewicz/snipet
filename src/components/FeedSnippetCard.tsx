@@ -121,9 +121,6 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
                   <span>Private</span>
                 </div>
               )}
-              <div className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium uppercase">
-                {snippet.language}
-              </div>
             </div>
             <Link
               to={`/snippet/${snippet.id}`}
@@ -191,48 +188,57 @@ export function FeedSnippetCard({ snippet }: FeedSnippetCardProps) {
         )}
       </div>
 
-      {/* Actions */}
-      <div className="p-4 space-y-3">
+      {/* Footer Actions & Details */}
+      <div className="p-4 space-y-4">
+        {/* Action Bar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              size="icon"
-              className="hover:text-red-500"
+              size="sm"
+              className={`gap-1.5 pl-0 hover:bg-transparent ${userUpvote ? "text-red-500 hover:text-red-600" : "hover:text-red-500"}`}
               onClick={() => user && toggleUpvoteMutation.mutate()}
               disabled={!user}
             >
-              <Heart className={`h-6 w-6 ${userUpvote ? "fill-red-500 text-red-500" : ""}`} />
+              <Heart className={`h-5 w-5 ${userUpvote ? "fill-current" : ""}`} />
+              <span className="text-sm font-medium">{upvotes || 0}</span>
             </Button>
+
             <Link to={`/snippet/${snippet.id}`}>
-              <Button variant="ghost" size="icon">
-                <MessageSquare className="h-6 w-6" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 hover:bg-transparent hover:text-blue-500"
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span className="text-sm font-medium">{commentCount || 0}</span>
               </Button>
             </Link>
-          </div>
-          <Link to={`/snippet/${snippet.id}`}>
-            <Button variant="ghost" size="icon" onClick={handleShare}>
-              <Share2 className="h-6 w-6" />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 hover:bg-transparent hover:text-green-500"
+              onClick={handleShare}
+            >
+              <Share2 className="h-5 w-5" />
             </Button>
-          </Link>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium uppercase">
+            {snippet.language}
+          </div>
         </div>
 
+        {/* Content Details */}
         <div className="space-y-1">
-          <div className="text-sm font-semibold">{upvotes || 0} likes</div>
-          <div className="text-sm">
-            {/* <span className="font-semibold mr-2">{snippet.expand?.author?.name}</span> */}
-            <span className="font-medium">{snippet.title}</span>
-            {snippet.description && (
-              <p className="text-muted-foreground mt-1 line-clamp-2">{snippet.description}</p>
-            )}
-          </div>
-          {(commentCount || 0) > 0 && (
-            <Link
-              to={`/snippet/${snippet.id}`}
-              className="text-sm text-muted-foreground hover:text-foreground block mt-1"
-            >
-              View all {commentCount} comments
-            </Link>
+          <Link to={`/snippet/${snippet.id}`} className="block group">
+            <h3 className="font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+              {snippet.title}
+            </h3>
+          </Link>
+          {snippet.description && (
+            <p className="text-muted-foreground text-sm line-clamp-2">{snippet.description}</p>
           )}
         </div>
       </div>
