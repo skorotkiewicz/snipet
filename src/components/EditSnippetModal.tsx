@@ -65,13 +65,15 @@ export function EditSnippetModal({ snippet, open, onOpenChange }: EditSnippetMod
   const updateSnippetMutation = useMutation({
     mutationFn: async (data: EditSnippetFormValues) => {
       // 1. Create a version snapshot of the CURRENT state (before update)
-      await pb.collection("snippet_versions").create({
-        snippet: snippet.id,
-        code: snippet.code,
-        language: snippet.language,
-        description: snippet.description,
-        author: snippet.author,
-      });
+      if (data.code !== snippet.code) {
+        await pb.collection("snippet_versions").create({
+          snippet: snippet.id,
+          code: snippet.code,
+          language: snippet.language,
+          description: snippet.description,
+          author: snippet.author,
+        });
+      }
 
       // 2. Update the snippet with NEW data
       return await pb.collection("snippets").update(snippet.id, data);
