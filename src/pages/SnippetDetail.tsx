@@ -325,7 +325,6 @@ export function SnippetDetailPage() {
                     onClick={() => setSelectedVersion(version)}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">Version</span>
                       {version.isParent && (
                         <span className="text-[10px] bg-muted px-1 rounded">Parent</span>
                       )}
