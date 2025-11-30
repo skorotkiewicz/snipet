@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useSearchParams } from "react-router-dom";
@@ -54,7 +54,8 @@ export function HomePage() {
     const urlLang = searchParams.get("language");
 
     if (urlSearch) {
-      filter += ` && title ~ "${urlSearch}"`;
+      const safeSearch = urlSearch.replace(/"/g, '\\"');
+      filter += ` && (title ~ "${safeSearch}" || description ~ "${safeSearch}" || code ~ "${safeSearch}" || language ~ "${safeSearch}" || author.name ~ "${safeSearch}")`;
     }
     if (urlLang && urlLang !== "all") {
       filter += ` && language = "${urlLang}"`;
@@ -92,13 +93,22 @@ export function HomePage() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-4 border-b">
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search snippets..."
-              className="pl-8 bg-card"
+              className="pl-9 pr-8 bg-card h-10 transition-all focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <Select value={languageFilter} onValueChange={handleLanguageChange}>
             <SelectTrigger className="w-[140px]">
